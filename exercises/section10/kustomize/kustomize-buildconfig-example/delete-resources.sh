@@ -20,11 +20,11 @@ else
     log "Using [$KUBECONFIG] to connect to OpenShift"
 fi
 
-NAMESPACE=$(oc project kustomize-http-example --short 2>&1;echo $? > /tmp/rc)
+NAMESPACE=$(oc project buildconfig-example --short 2>&1;echo $? > /tmp/rc)
 if [ $(cat /tmp/rc) -eq 0 ]; then
   log "Checking resources in namespace [ $NAMESPACE ]"
   
-  if [ "$NAMESPACE" == "kustomize-http-example" ]; then
+  if [ "$NAMESPACE" == "buildconfig-example" ]; then
     DEPLOYMENT=$(oc get deployment -o name)
     if [ "$DEPLOYMENT." != "." ]; then
       log -n "Deleting deployment [ $DEPLOYMENT ] in $NAMESPACE ... "
