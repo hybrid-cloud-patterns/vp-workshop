@@ -1,0 +1,29 @@
+﻿apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: cli-tools
+  namespace: buildconfig-example
+  labels:
+    app: cli-tools
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/claudiol/s2i-cli-tools
+      ref: example
+    contextDir: containerfiles
+  strategy:
+    type: Docker                      
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      from:
+        kind: ImageStreamTag  
+        namespace: openshift
+        name: cli:latest
+  output:
+    to:
+      kind: ImageStreamTag
+      name: cli-tools:latest
+  triggers:
+  #- type: ImageChange
+  - type: ConfigChange

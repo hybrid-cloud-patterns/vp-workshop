@@ -1,0 +1,7 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ns-buildconfig-example.yaml
+- buildconfig-docker-build.yaml
+- imagestream-s2i-example.yaml
+- deployment-cli-tools.yaml 
