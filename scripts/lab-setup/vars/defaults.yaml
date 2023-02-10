@@ -1,0 +1,28 @@
+clusters_count: 1
+aws_region: "eu-west-1"
+ocp_version: "4.11.27"
+clusters_prefix: "vp-workshop-"
+workshop_output_path: "~/vp-workshop"
+# Where all the openshift install output files live
+workshop_ocp_install_path: "{{ workshop_output_path }}/ocp_install"
+# Where all the openshift install and ocp client bin files are downloaded
+workshop_ocp_client_path: "{{ workshop_output_path }}/ocp_clients"
+# Folder containing all urls + password + kubeconfig files ready to be exported
+# to students
+workshop_student_files_path: "{{ workshop_output_path }}/student_files"
+
+ssh_pub_file: ~/.ssh/id_rsa.pub
+pull_secrets_file: ~/.pullsecret.json
+cluster_password_file: ~/.vp_workshop_common_pass
+
+# Cluster sizing overrides
+compute_replicas: 2
+compute_type: m5.xlarge
+controlplane_replicas: 3
+controlplane_type: m5.xlarge
+
+cluster_network_cidr: 10.128.0.0/14
+cluster_network_hostprefix: 23
+machine_network_cidr: 10.0.0.0/16
+network_type: OpenShiftSDN
+service_network: 172.30.0.0/16

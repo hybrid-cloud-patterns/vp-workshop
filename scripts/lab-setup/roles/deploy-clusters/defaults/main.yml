@@ -1,0 +1,19 @@
+---
+workspace_dir: "{{ base_dir }}/workspace"
+base_domain: blueprints.rhecoeng.com
+compute_replicas: 3
+compute_type: m5.xlarge
+controlplane_replicas: 3
+controlplane_type: m5.xlarge
+cluster_network_cidr: 10.128.0.0/14
+cluster_network_hostprefix: 23
+machine_network_cidr: 10.0.0.0/16
+network_type: OpenShiftSDN
+service_network: 172.30.0.0/16
+
+clusters_start_nr: 1
+clusters_end_nr: "{{ clusters_count }}"
+
+
+ssh_pub_file: ~/.ssh/id_rsa.pub
+pull_secrets_file: ~/.pullsecret.json

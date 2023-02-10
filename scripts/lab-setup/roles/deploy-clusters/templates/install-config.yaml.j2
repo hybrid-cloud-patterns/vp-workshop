@@ -1,0 +1,37 @@
+apiVersion: v1
+baseDomain: {{ base_domain }}
+compute:
+- architecture: amd64
+  hyperthreading: Enabled
+  name: worker
+  platform: { aws: { type: {{ compute_type }} } } # Customize this if needed but this is our default. Same with replica count
+  replicas: {{ compute_replicas }}
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  platform: { aws: { type: {{ controlplane_type }} } } # Customizable, see above.
+  replicas: {{ controlplane_replicas }}
+metadata:
+  creationTimestamp: null
+  name: {{ item }} # Cluster name.  Change if you're going to run more than one
+networking:
+  clusterNetwork:
+  - cidr: {{ cluster_network_cidr }}
+    hostPrefix: {{ cluster_network_hostprefix }}
+  machineNetwork:
+  - cidr: {{ machine_network_cidr }}
+  networkType: {{ network_type }}
+  serviceNetwork:
+  - {{ service_network }}
+platform:
+  aws:
+    region: {{ aws_region }}
+publish: External
+{#
+This replace calls are absolutely fucking terrible, but ansible insists on just interpreting
+the string and trying to be too smart. Lesigh.
+#}
+pullSecret: '{{ pull_secret | replace(' ', '') | replace('\'', '"') }}'
+sshKey: |
+  {{ ssh_pub_key }}

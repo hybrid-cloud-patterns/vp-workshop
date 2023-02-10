@@ -1,0 +1,114 @@
+---
+- name: OCP Version
+  ansible.builtin.debug:
+    msg: "Deploying {{ clusters_count }} OCP {{ ocp_version }} clusters in AWS region {{ aws_region }}"
+
+- name: Set cluster names list
+  ansible.builtin.set_fact:
+    cluster_names: "{{ cluster_names|default([]) + [item] }}"
+  with_sequence: start="{{ clusters_start_nr }}" end="{{ clusters_end_nr }}" format="{{ clusters_prefix }}%02d"
+
+- name: Create one folder for each cluster in workspace/
+  ansible.builtin.file:
+    path: "{{ workshop_ocp_install_path }}/{{ item }}"
+    state: directory
+  loop: "{{ cluster_names }}"
+
+- name: Read in ~/.ssh/id_rsa.pub
+  ansible.builtin.set_fact:
+    ssh_pub_key: "{{ lookup('file', ssh_pub_file) }}"
+
+- name: Read in ~/.pullsecret.json
+  ansible.builtin.set_fact:
+    pull_secret: "{{ lookup('file', pull_secrets_file) }}"
+
+- name: Template install config in the each workspace/cluster folder
+  ansible.builtin.template:
+    src: templates/install-config.yaml.j2
+    dest: "{{ workshop_ocp_install_path }}/{{ item }}/install-config.yaml"
+  loop: "{{ cluster_names }}"
+
+- name: Deploy openshift
+  ansible.builtin.shell:
+    cmd: |
+      set -ex
+      {{ workshop_ocp_client_path }}/openshift-install create cluster --dir=.
+    chdir: "{{ workshop_ocp_install_path }}/{{ item }}"
+  loop: "{{ cluster_names }}"
+  register: deploy_openshift_clusters
+  async: 3600 # maximum runtime is 1h
+  poll: 0 # do not wait
+
+- name: Deployment is ongoing
+  ansible.builtin.debug:
+    msg: |
+      Openshift installation is proceeding, DO NOT INTERRUPT THIS PROCESS!!
+      You can check progress logs in {{ workshop_ocp_install_path }}/<cluster>/.openshift_install.log
+
+- name: Wait for installs to finish
+  ansible.builtin.async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: install_jobs
+  until: install_jobs.finished
+  delay: 60 # check every minute
+  retries: 90 # 1h and 30mins max wait time
+  loop: "{{ deploy_openshift_clusters.results }}"
+
+- name: Read in ~/.vp_workshop_common_pass
+  ansible.builtin.set_fact:
+    vp_common_secret: "{{ lookup('file', '~/.vp_workshop_common_pass') }}"
+
+- name: Set same password on all clusters
+  ansible.builtin.shell:
+    cmd: |
+      set -ex
+      PASS=$(python -c 'import bcrypt; print(bcrypt.hashpw(b"{{ vp_common_secret }}", bcrypt.gensalt(rounds=10)).decode())' | base64 -w0)
+      chmod 0600 {{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeadmin-password
+      chmod 0600 {{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeconfig
+      KUBECONFIG={{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeconfig \
+        {{ workshop_ocp_client_path }}/oc patch secret -n kube-system kubeadmin --type json -p '[{"op": "replace", "path": "/data/kubeadmin", "value": "'$PASS'"}]'
+    chdir: "{{ workshop_ocp_install_path }}/{{ item }}"
+  loop: "{{ cluster_names }}"
+  register: password_set_openshift_clusters
+  async: 3600 # maximum runtime is 1h
+  poll: 0 # do not wait
+
+- name: Password setting is ongoing
+  ansible.builtin.debug:
+    msg: Openshift password setting, DO NOT INTERRUPT THIS PROCESS!!
+
+- name: Wait for password reset to finish
+  ansible.builtin.async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: password_set_jobs
+  until: password_set_jobs.finished
+  delay: 10 # check every 10s
+  retries: 20 # Wait for 3 minutes and 20s
+  loop: "{{ password_set_openshift_clusters.results }}"
+
+- name: Create student folders
+  ansible.builtin.file:
+    path: "{{ workshop_student_files_path }}/{{ item }}"
+    recurse: true
+  loop: "{{ cluster_names }}"
+
+- name: Template out login info in each cluster folder for the student
+  ansible.builtin.template:
+    src: "login.txt.j2"
+    dest: "{{ workshop_student_files_path }}/{{ item }}/login.txt"
+  loop: "{{ cluster_names }}"
+
+- name: Copy kubeconfig file in the student folder
+  ansible.builtin.shell:
+    cmd: |
+      cp "{{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeconfig" "{{ workshop_student_files_path | expanduser }}/{{ item }}/"
+  loop: "{{ cluster_names }}"
+
+- name: Webserver message
+  vars:
+    msg: |
+      You may now export these files locally via:
+      cd "{{ workshop_student_files_path | expanduser }}/"
+      python -m http.server 8080
+  ansible.builtin.debug:
+    msg: "{{ msg.split('\n') }}"
