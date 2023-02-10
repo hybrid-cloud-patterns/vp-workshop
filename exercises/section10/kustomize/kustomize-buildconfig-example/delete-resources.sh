@@ -28,9 +28,9 @@ if [ $(cat /tmp/rc) -eq 0 ]; then
     DEPLOYMENT=$(oc get deployment -o name)
     if [ "$DEPLOYMENT." != "." ]; then
       log -n "Deleting deployment [ $DEPLOYMENT ] in $NAMESPACE ... "
-      oc delete $DEPLOYMENT
-      if [ $? == 0 ]; then
-        log -n "Deleting deployment [ $DEPLOYMENT ] in $NAMESPACE ... ok"
+      RC=$(oc delete $DEPLOYMENT > /dev/null;echo $? > /tmp/rc)
+	  if [ $(cat /tmp/rc) -eq 0 ]; then
+        log "Deleting deployment [ $DEPLOYMENT ] in $NAMESPACE ... ok"
       fi
     fi
   
@@ -40,8 +40,8 @@ if [ $(cat /tmp/rc) -eq 0 ]; then
       for service in $SERVICES
       do
         log -n "Deleting Service [ $service ] in $NAMESPACE ... "
-  	  oc delete $service
-  	  if [ $? == 0]; then
+  	  RC=$(oc delete $service > /dev/null;echo $? > /tmp/rc)
+	  if [ $(cat /tmp/rc) -eq 0 ]; then
           log "Deleting Service [ $service ] in $NAMESPACE ... ok"
   	  fi
       done
@@ -50,20 +50,20 @@ if [ $(cat /tmp/rc) -eq 0 ]; then
     ROUTE=$(oc get route -o name)
     if [ "$ROUTE." != "." ]; then
       log -n "Deleting route [ $ROUTE ] in $NAMESPACE ... "
-      oc delete $ROUTE
-      if [ $? == 0 ]; then
-        log -n "Deleting route [ $ROUTE ] in $NAMESPACE ... ok"
+      RC=$(oc delete $ROUTE > /tmp/rc;echo $? > /tmp/rc)
+	  if [ $(cat /tmp/rc) -eq 0 ]; then
+        log "Deleting route [ $ROUTE ] in $NAMESPACE ... ok"
       fi
     fi
   
-    RESOURCES=$(oc get all)
+    RESOURCES=$(oc get all 2>&1)
     if [[ "$RESOURCES" == *"No resources found"* ]]; then
       log "All resources in namespace [ $NAMESPACE ] have been deleted"
     fi
-    oc project default
+    RC=$(oc project default > /dev/null)
     log -n "Removing [ $NAMESPACE ] namespace ... "
-    NS=$(oc delete ns/$NAMESPACE)
-    if [ $? == 0 ]; then
+    NS=$(oc delete ns/$NAMESPACE;echo $? > /tmp/rc)
+	if [ $(cat /tmp/rc) -eq 0 ]; then
       log "Removing [ $NAMESPACE ] namespace ... ok"
     fi
   fi
