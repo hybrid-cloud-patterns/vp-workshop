@@ -1,0 +1,11 @@
+{{- if .Values.buildconfig.example.createNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: {{ .Values.buildconfig.example.namespace }}
+  name: {{ .Values.buildconfig.example.namespace }}
+spec:
+  finalizers:
+  - kubernetes
+{{- end }}
