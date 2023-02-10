@@ -6,6 +6,7 @@ This repository contains exercises for the Validated Patterns enablement.
 
 This is the directory that contains the Section 10 exercises.
 
+```
 exercises/
 └── section10
     ├── helm
@@ -46,4 +47,5 @@ exercises/
             │   └── service-http.yaml
             ├── delete-resources.sh
             └── kustomization.yaml
+```
 
