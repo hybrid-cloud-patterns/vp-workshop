@@ -1,4 +1,6 @@
-This folder contains the scripts to provision a number of clusters in AWS.
+## Lab Setup scripts
+
+This folder contains the scripts to provision a number of clusters in parallel on AWS.
 
 The produced log files are to be found in the workspace/ folder
 
@@ -22,12 +24,14 @@ It assumes three files:
 
 ## Installation
 
-Check out `vars/default.yaml` and tweak cluster size, prefix or any other variables.
+Check out `vars/default.yaml` and tweak cluster size, prefix or any other variables (OCP version).
 Then run:
 
     make install
 
 All the openshift-install files will be in `~/vp-workshop/ocp_install`. One folder per cluster.
+After the installation is complete all files ready for students will be in `~/vp-workshop/student_files/`
+ready to be exported via `python -m http.server 8080` or similar.
 
 ## Destruction
 
