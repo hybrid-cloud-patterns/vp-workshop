@@ -1,0 +1,85 @@
+---
+- name: Resize AWS clusters
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ./vars/defaults.yaml
+  vars_prompt:
+    - name: additional_clusters
+      prompt: How many clusters should we add?
+      private: false
+
+  tasks:
+    - name: Info about clusters to be resized
+      ansible.builtin.debug:
+        msg: "Start: {{ clusters_count }} - {{ aws_region }} - Add clusters: {{ additional_clusters }}"
+
+    - name: Check requirements
+      ansible.builtin.include_role:
+        name: check-requirements
+    # We check the workshop_ocp_install_path folder, as we do not want to trust
+    # that clusters_count is necessarily correct (i.e. you could call resize
+    # multiple times)
+    - name: Find out about existing clusters
+      ansible.builtin.find:
+        paths: "{{ workshop_ocp_install_path }}"
+        file_type: "directory"
+      register: workspace_folders
+
+    - name: Fail if "{{ workshop_ocp_install_path }} folder is empty
+      ansible.builtin.fail:
+        msg: |
+          Refusing to proceed as there are no subfolders in {{ workshop_ocp_install_path }},
+          which means there is no data about existing clusters
+      when: workspace_folders.matched == 0
+
+    - name: Fetch all folders
+      ansible.builtin.set_fact:
+        cluster_folders: "{{ cluster_folders | default([]) + [item.path | basename] }}"
+      loop: "{{ workspace_folders.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+
+    - name: Print all found folders
+      ansible.builtin.debug:
+        msg: "{{ cluster_folders }}"
+
+    - name: Find highest folder number
+      ansible.builtin.set_fact:
+        max_cluster_nr: "{{ cluster_folders | sort | last | replace(clusters_prefix, '') | int }}"
+
+    - name: Set starting and ending number for aditional clusters
+      ansible.builtin.set_fact:
+        starting_number: "{{ max_cluster_nr | int + 1 }}"
+        ending_number: "{{ max_cluster_nr | int + 1 + additional_clusters | int }}"
+
+    - name: Set new cluster names list
+      ansible.builtin.set_fact:
+        new_cluster_names: "{{ new_cluster_names | default([]) + [item] }}"
+      with_sequence: start="{{ starting_number }}" end="{{ ending_number }}" format="{{ clusters_prefix }}%02d"
+
+    - name: Print additional cluster names to be installed
+      vars:
+        msg: |
+          Existing clusters list: {{ cluster_folders }}
+          Additional clusters list: {{ new_cluster_names }}
+      ansible.builtin.debug:
+        msg: "{{ msg.split('\n') }}"
+
+    - name: Prompt if the above is okay
+      ansible.builtin.pause:
+        prompt: "Do you want to proceed adding the above clusters (yes/no)?"
+      register: check_continue
+
+    - name: Fail if not confirmed continue
+      ansible.builtin.fail:
+        msg: "Stopping here as we did not confirm"
+      when: not (check_continue.user_input | bool)
+
+    - name: Deploy OCP clusters
+      ansible.builtin.include_role:
+        name: deploy-clusters
+      vars:
+        clusters_start_nr: "{{ starting_number }}"
+        clusters_end_nr: "{{ ending_number }}"

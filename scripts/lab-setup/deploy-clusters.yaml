@@ -1,0 +1,46 @@
+---
+- name: Deploy AWS clusters
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ./vars/defaults.yaml
+  tasks:
+    - name: Info about clusters to be deployed
+      ansible.builtin.debug:
+        msg: "Start: {{ clusters_count }} - {{ aws_region }}"
+
+    - name: Create Lab destination folders (if not existing)
+      ansible.builtin.file:
+        path: "{{ item }}"
+        recurse: true
+      loop:
+        - "{{ workshop_ocp_install_path }}"
+        - "{{ workshop_ocp_client_path }}"
+        - "{{ workshop_student_files_path }}"
+
+    - name: Check requirements
+      ansible.builtin.include_role:
+        name: check-requirements
+
+    - name: Make sure the openshift installation base folder is empty
+      ansible.builtin.find:
+        paths: "{{ workshop_ocp_install_path }}"
+        file_type: any
+        hidden: yes
+      register: files_found_in_workspace
+
+    - name: Fail if {{ workshop_ocp_install_path }} folder is not empty
+      ansible.builtin.fail:
+        msg: |
+          Refusing to proceed as there are files in {{ workshop_ocp_install_path }}, which means there
+          are leftovers from a previous installation
+      when: files_found_in_workspace.matched > 0
+
+    - name: Fetch OCP clients
+      ansible.builtin.include_role:
+        name: fetch-ocp-clients
+
+    - name: Deploy OCP clusters
+      ansible.builtin.include_role:
+        name: deploy-clusters

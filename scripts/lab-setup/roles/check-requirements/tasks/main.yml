@@ -1,0 +1,18 @@
+---
+- name: Stat the required files
+  ansible.builtin.stat:
+    path: "{{ item | expanduser }}"
+  register: check_files
+  loop:
+    - "{{ ssh_pub_file }}"
+    - "{{ pull_secrets_file }}"
+    - "{{ cluster_password_file }}"
+    - "{{ workshop_student_files_path }}"
+
+- name: Fail if any file does not exist
+  ansible.builtin.fail:
+    msg: "{{ item }} not found"
+  when: not item.stat.exists
+  loop: "{{ check_files.results }}"
+
+# Other checks needed go here

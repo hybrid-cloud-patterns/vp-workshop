@@ -1,0 +1,68 @@
+---
+- name: Destroy AWS clusters
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - ./vars/defaults.yaml
+  tasks:
+    - name: Make sure the openshift installation base folder is not empty
+      ansible.builtin.find:
+        paths: "{{ workshop_ocp_install_path }}"
+        file_type: any
+        hidden: yes
+      register: workspace_folders
+
+    - name: Fail if {{ workshop_ocp_install_path }} folder is empty
+      ansible.builtin.fail:
+        msg: |
+          No point to proceed as the {{ workshop_ocp_install_path }} folder is empty and there is no record of
+          existing clusters
+      when: workspace_folders.matched == 0
+
+    - name: Fetch all folders
+      ansible.builtin.set_fact:
+        cluster_folders: "{{ cluster_folders|default([]) + [item.path | basename] }}"
+      loop: "{{ workspace_folders.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+
+    - name: Print all found folders
+      ansible.builtin.debug:
+        msg: "{{ cluster_folders }}"
+
+    - name: Prompt if the above is okay
+      ansible.builtin.pause:
+        prompt: "Do you want to proceed DELETING all of the above clusters (yes/no)?"
+      register: check_continue
+
+    - name: Fail if not confirmed continue
+      ansible.builtin.fail:
+        msg: "Stopping here as we did not confirm"
+      when: not (check_continue.user_input | bool)
+
+    - name: Delete OpenShift clusters
+      ansible.builtin.shell:
+        cmd: |
+          set -ex
+          {{ workshop_ocp_client_path }}/openshift-install destroy cluster --dir=.
+        chdir: "{{ workshop_ocp_install_path }}/{{ item }}"
+      loop: "{{ cluster_folders }}"
+      register: destroy_openshift_clusters
+      async: 3600 # maximum runtime is 1h
+      poll: 0 # do not wait
+
+    - name: Cluster destruction is ongoing
+      ansible.builtin.debug:
+        msg: |
+          Openshift cluster destroying is proceeding, DO NOT INTERRUPT THIS PROCESS!!
+          You can check progress logs in {{ workshop_ocp_install_path }}/<cluster>/.openshift_install.log
+
+    - name: Wait for cluster destroy to finish
+      ansible.builtin.async_status:
+        jid: "{{ item.ansible_job_id }}"
+      register: install_jobs
+      until: install_jobs.finished
+      delay: 60 # check every minute
+      retries: 70 # 1h and 10mins max wait time
+      loop: "{{ destroy_openshift_clusters.results }}"

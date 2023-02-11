@@ -1,0 +1,32 @@
+---
+- name: OCP Version
+  ansible.builtin.debug:
+    msg: "Downloading clients for OCP: {{ ocp_version }} - Running in folder: {{ base_dir }}"
+
+# Use path + filename as destination to avoid redownloading correct files
+# See https://github.com/ansible/ansible/issues/19548
+- name: Download openshift installer
+  ansible.builtin.get_url:
+    url: "{{ openshift_installer_url }}"
+    dest: "{{ workshop_ocp_client_path }}/{{ openshift_installer }}"
+    checksum: "sha256:{{ checksum_url }}"
+  register: downloaded_installer
+  until: downloaded_installer is succeeded
+  retries: "{{ retries }}"
+
+- name: Download openshift clients
+  ansible.builtin.get_url:
+    url: "{{ ocp_client_url }}"
+    dest: "{{ workshop_ocp_client_path }}/{{ ocp_client }}"
+    checksum: "sha256:{{ checksum_url }}"
+  register: downloaded_ocp
+  until: downloaded_ocp is succeeded
+  retries: "{{ retries }}"
+
+- name: Extract download tar files
+  ansible.builtin.unarchive:
+    src: "{{ item }}"
+    dest: "{{ workshop_ocp_client_path }}"
+  loop:
+    - "{{ workshop_ocp_client_path }}/{{ openshift_installer }}"
+    - "{{ workshop_ocp_client_path }}/{{ ocp_client }}"
