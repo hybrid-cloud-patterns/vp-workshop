@@ -52,7 +52,7 @@
     - name: Set starting and ending number for aditional clusters
       ansible.builtin.set_fact:
         starting_number: "{{ max_cluster_nr | int + 1 }}"
-        ending_number: "{{ max_cluster_nr | int + 1 + additional_clusters | int }}"
+        ending_number: "{{ max_cluster_nr | int + additional_clusters | int }}"
 
     - name: Set new cluster names list
       ansible.builtin.set_fact:

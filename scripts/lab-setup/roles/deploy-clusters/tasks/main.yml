@@ -109,6 +109,12 @@
     msg: |
       You may now export these files locally via:
       cd "{{ workshop_student_files_path | expanduser }}/"
-      python -m http.server 8080
+      ./serve.sh
   ansible.builtin.debug:
     msg: "{{ msg.split('\n') }}"
+
+- name: Template out serve.sh
+  ansible.builtin.template:
+    src: "serve.sh.j2"
+    dest: "{{ workshop_student_files_path }}/server.sh"
+    mode: 0755
