@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Make sure your firewall allows connections to $PORT
+PORT=8080
+echo "Valid IP addresses:"
+ip -o addr show
+cd {{ workshop_student_files_path }}
+echo ""
+echo "Webserver started at http://0.0.0.0:${PORT}"
+python -m http.server "${PORT}"
