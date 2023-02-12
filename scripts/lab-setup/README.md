@@ -10,15 +10,15 @@ vp-workshop-02
 ...
 
 It assumes three files:
-1. ~/.pullsecret.json exists and is in the canonical json form like (no spaces and must use double quotes!):
+1. `~/.pullsecret.json` exists and is in the canonical json form like (no spaces and must use double quotes!):
   `{"auths":{"cloud.openshift.com":{"auth":".....213....","email": "foo@bar.it"..}}}`
 
-   Override the pull_secrets_file variable if you use a different file
+   Override the `pull_secrets_file` variable if you use a different file
 
-2. ~/.ssh/id_rsa.pub is the public key to upload to the clusters. Override
-   ssh_pub_file if you use a different public key
+2. `~/.ssh/id_rsa.pub` is the public key to upload to the clusters. Override
+   `ssh_pub_file` if you use a different public key
 
-3. ~/.vp_workshop_common_pass is the file containing the password to be used
+3. `~/.vp_workshop_common_pass` is the file containing the password to be used
    across all clusters OCP clusters want the password to be in this form:
    f1234-bbcde-ccc22-aaa12
 
@@ -32,6 +32,7 @@ Then run:
 All the openshift-install files will be in `~/vp-workshop/ocp_install`. One folder per cluster.
 After the installation is complete all files ready for students will be in `~/vp-workshop/student_files/`
 ready to be exported via `python -m http.server 8080` or similar.
+
 
 ## Destruction
 
