@@ -116,5 +116,5 @@
 - name: Template out serve.sh
   ansible.builtin.template:
     src: "serve.sh.j2"
-    dest: "{{ workshop_student_files_path }}/server.sh"
+    dest: "{{ workshop_student_files_path }}/serve.sh"
     mode: 0755
