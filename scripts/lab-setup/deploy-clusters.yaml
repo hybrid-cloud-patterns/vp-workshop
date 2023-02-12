@@ -6,10 +6,6 @@
   vars_files:
     - ./vars/defaults.yaml
   tasks:
-    - name: Info about clusters to be deployed
-      ansible.builtin.debug:
-        msg: "Start: {{ clusters_count }} - {{ aws_region }}"
-
     - name: Create Lab destination folders (if not existing)
       ansible.builtin.file:
         path: "{{ item }}"
@@ -36,6 +32,26 @@
           Refusing to proceed as there are files in {{ workshop_ocp_install_path }}, which means there
           are leftovers from a previous installation
       when: files_found_in_workspace.matched > 0
+
+    - name: Info about clusters to be deployed
+      vars:
+        msg: |
+          Number of clusters to be installed: {{ clusters_count }} - AWS Region: {{ aws_region }}
+
+          Control Nodes: {{ "%02d" | format(controlplane_replicas) }} [{{ controlplane_type }}]
+          Compute Nodes: {{ "%02d" | format(compute_replicas) }} [{{ compute_type }}]
+      ansible.builtin.debug:
+        msg: "{{ msg.split('\n') }}"
+
+    - name: Prompt if the above is okay
+      ansible.builtin.pause:
+        prompt: "Do you want to proceed installing all the clusters (yes/no)?"
+      register: check_continue
+
+    - name: Fail if not confirmed continue
+      ansible.builtin.fail:
+        msg: "Stopping here as we did not confirm"
+      when: not (check_continue.user_input | bool)
 
     - name: Fetch OCP clients
       ansible.builtin.include_role:
