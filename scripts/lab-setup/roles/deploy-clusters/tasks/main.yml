@@ -94,8 +94,8 @@
 
 - name: Template out login info in each cluster folder for the student
   ansible.builtin.template:
-    src: "login.txt.j2"
-    dest: "{{ workshop_student_files_path }}/{{ item }}/login.txt"
+    src: "login.html.j2"
+    dest: "{{ workshop_student_files_path }}/{{ item }}/login.html"
   loop: "{{ cluster_names }}"
 
 - name: Copy kubeconfig file in the student folder

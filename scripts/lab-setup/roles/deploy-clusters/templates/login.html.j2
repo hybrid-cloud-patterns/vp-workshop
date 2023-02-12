@@ -1,0 +1,13 @@
+<html>
+<title>{{ item }}.{{ base_domain }} connection details</title>
+<body>
+To connect to your cluster go to:
+<a href="https://console-openshift-console.apps.{{ item }}.{{ base_domain }}/dashboards">https://console-openshift-console.apps.{{ item }}.{{ base_domain }}/dashboards</a>
+
+<br/>
+User: kubeadmin
+<br/>
+Pass: {{ vp_common_secret }}
+</body>
+<html>
+
