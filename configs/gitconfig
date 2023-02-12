@@ -49,6 +49,8 @@
 	swc = show --word-diff=color --word-diff-regex=.
 	up = !sh -c 'git pull --rebase --prune && git log --pretty=format:\"%Cred%ae %Creset- %C(yellow)%s %Creset(%ar)\" HEAD@{1}..'
 	upstream-branch = status -sb
+	wt = worktree
+	wtl = worktree list
 [diff]
 	tool = bcompare
 	renamelimit = 2000
