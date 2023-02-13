@@ -1,10 +1,31 @@
 #!/bin/bash
+set -e
+
+# We use a random simple user/password just to avoid drive-by peeks
+USER=beard
+PASSWORD=$(shuf -n1 /usr/share/dict/words)
+
+# Create self-signed certificates
+# Create self-signed certificates
+rm -rf ./ssl
+mkdir ./ssl
+pushd ssl
+sscg
+popd
 
 # Make sure your firewall allows connections to $PORT
 PORT=8080
 echo "Valid IP addresses:"
 ip -o addr show
-cd {{ workshop_student_files_path }}
 echo ""
-echo "Webserver started at http://0.0.0.0:${PORT}"
-python -m http.server "${PORT}"
+echo "Webserver started at https://0.0.0.0:${PORT}"
+echo ""
+echo "User: ${USER}"
+echo "Pass: ${PASSWORD}"
+echo ""
+htpasswd -Bbc "./ssl/htpasswd" "${USER}" "${PASSWORD}"
+podman run -it --rm -p "${PORT}":443 --name nginx \
+	-v "{{ base_dir }}/nginx:/etc/nginx:ro,z" \
+	-v "./ssl/:/etc/nginx/ssl:ro,z" \
+	-v "./ssl/htpasswd:/etc/nginx/.htpasswd:ro,z" \
+	-v "$(pwd)/clusters/:/var/www:ro,z" nginx:latest
