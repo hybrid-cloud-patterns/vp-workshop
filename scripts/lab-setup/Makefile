@@ -7,7 +7,7 @@ help: ## This help message
 
 ##@ Lab Setup Tasks
 .PHONY: install
-install: ## deploys the clusters
+install: ## Deploys the clusters
 	@echo "Deploy"
 	ansible-playbook -e base_dir=$$(pwd) deploy-clusters.yaml
 
@@ -18,6 +18,11 @@ resize: ## Increase the number of clusters, while leaving the running ones still
 
 ##@ Lab Teardown Tasks
 .PHONY: destroy
-destroy: ## destroys all already deployed the clusters
+destroy: ## Destroys all already deployed the clusters
 	@echo "Destroy"
 	ansible-playbook -e base_dir=$$(pwd) destroy-clusters.yaml
+
+##@Additional Tasks
+.PHONY: lint
+lint: ## Runs ansible-lint
+	ansible-lint ansible-lint *yaml roles vars
