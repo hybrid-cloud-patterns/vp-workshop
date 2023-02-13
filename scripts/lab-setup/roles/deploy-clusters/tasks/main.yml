@@ -20,7 +20,7 @@
 
 - name: Read in ~/.pullsecret.json
   ansible.builtin.set_fact:
-    pull_secret: "{{ lookup('file', pull_secrets_file) }}"
+    pull_secret: "{{ lookup('file', pull_secrets_file) | from_json | to_json(separators=(',',':')) }}"
 
 - name: Template install config in the each workspace/cluster folder
   ansible.builtin.template:
