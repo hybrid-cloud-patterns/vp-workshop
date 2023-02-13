@@ -23,7 +23,7 @@
       ansible.builtin.find:
         paths: "{{ workshop_ocp_install_path }}"
         file_type: any
-        hidden: yes
+        hidden: true
       register: files_found_in_workspace
 
     - name: Fail if {{ workshop_ocp_install_path }} folder is not empty

@@ -10,7 +10,7 @@
       ansible.builtin.find:
         paths: "{{ workshop_ocp_install_path }}"
         file_type: any
-        hidden: yes
+        hidden: true
       register: workspace_folders
 
     - name: Fail if {{ workshop_ocp_install_path }} folder is empty
@@ -22,7 +22,7 @@
 
     - name: Fetch all folders
       ansible.builtin.set_fact:
-        cluster_folders: "{{ cluster_folders|default([]) + [item.path | basename] }}"
+        cluster_folders: "{{ cluster_folders | default([]) + [item.path | basename] }}"
       loop: "{{ workspace_folders.files }}"
       loop_control:
         label: "{{ item.path | basename }}"

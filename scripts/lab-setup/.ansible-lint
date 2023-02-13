@@ -1,0 +1,8 @@
+use_default_rules: true
+skip_list:
+  # [E301] Commands should not change things if nothing needs doing
+  - '301'
+  # Allow Jinja templating inside task and play names
+  - name[template]
+  # Allow some long lines
+  - yaml[line-length]

@@ -10,6 +10,7 @@
     url: "{{ openshift_installer_url }}"
     dest: "{{ workshop_ocp_client_path }}/{{ openshift_installer }}"
     checksum: "sha256:{{ checksum_url }}"
+    mode: "0644"
   register: downloaded_installer
   until: downloaded_installer is succeeded
   retries: "{{ retries }}"
@@ -19,6 +20,7 @@
     url: "{{ ocp_client_url }}"
     dest: "{{ workshop_ocp_client_path }}/{{ ocp_client }}"
     checksum: "sha256:{{ checksum_url }}"
+    mode: "0644"
   register: downloaded_ocp
   until: downloaded_ocp is succeeded
   retries: "{{ retries }}"
