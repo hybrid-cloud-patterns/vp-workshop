@@ -20,7 +20,7 @@
 
 - name: Read in ~/.pullsecret.json
   ansible.builtin.set_fact:
-    pull_secret: "{{ lookup('file', pull_secrets_file) }}"
+    pull_secret: "{{ lookup('file', pull_secrets_file) | from_json | to_json(separators=(',',':')) }}"
 
 - name: Template install config in the each workspace/cluster folder
   ansible.builtin.template:
@@ -88,20 +88,20 @@
 
 - name: Create student folders
   ansible.builtin.file:
-    path: "{{ workshop_student_files_path }}/{{ item }}"
+    path: "{{ workshop_student_files_path }}/clusters/{{ item }}"
     recurse: true
   loop: "{{ cluster_names }}"
 
 - name: Template out login info in each cluster folder for the student
   ansible.builtin.template:
     src: "login.html.j2"
-    dest: "{{ workshop_student_files_path }}/{{ item }}/login.html"
+    dest: "{{ workshop_student_files_path }}/clusters/{{ item }}/login.html"
   loop: "{{ cluster_names }}"
 
 - name: Copy kubeconfig file in the student folder
   ansible.builtin.shell:
     cmd: |
-      cp "{{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeconfig" "{{ workshop_student_files_path | expanduser }}/{{ item }}/"
+      cp "{{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeconfig" "{{ workshop_student_files_path | expanduser }}/clusters/{{ item }}/"
   loop: "{{ cluster_names }}"
 
 - name: Webserver message
