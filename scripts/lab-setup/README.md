@@ -31,7 +31,7 @@ Then run:
 
 All the openshift-install files will be in `~/vp-workshop/ocp_install`. One folder per cluster.
 After the installation is complete all files ready for students will be in `~/vp-workshop/student_files/`
-ready to be exported via `python -m http.server 8080` or similar.
+ready to be exported via a scripts in there called `serve.sh`.
 
 
 ## Destruction
