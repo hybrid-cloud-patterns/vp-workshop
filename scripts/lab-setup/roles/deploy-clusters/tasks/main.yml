@@ -5,13 +5,14 @@
 
 - name: Set cluster names list
   ansible.builtin.set_fact:
-    cluster_names: "{{ cluster_names|default([]) + [item] }}"
+    cluster_names: "{{ cluster_names | default([]) + [item] }}"
   with_sequence: start="{{ clusters_start_nr }}" end="{{ clusters_end_nr }}" format="{{ clusters_prefix }}%02d"
 
 - name: Create one folder for each cluster in workspace/
   ansible.builtin.file:
     path: "{{ workshop_ocp_install_path }}/{{ item }}"
     state: directory
+    mode: "0755"
   loop: "{{ cluster_names }}"
 
 - name: Read in ~/.ssh/id_rsa.pub
@@ -20,12 +21,13 @@
 
 - name: Read in ~/.pullsecret.json
   ansible.builtin.set_fact:
-    pull_secret: "{{ lookup('file', pull_secrets_file) | from_json | to_json(separators=(',',':')) }}"
+    pull_secret: "{{ lookup('file', pull_secrets_file) | from_json | to_json(separators=(',', ':')) }}"
 
 - name: Template install config in the each workspace/cluster folder
   ansible.builtin.template:
     src: templates/install-config.yaml.j2
     dest: "{{ workshop_ocp_install_path }}/{{ item }}/install-config.yaml"
+    mode: "0644"
   loop: "{{ cluster_names }}"
 
 - name: Deploy openshift
@@ -96,6 +98,7 @@
   ansible.builtin.template:
     src: "login.html.j2"
     dest: "{{ workshop_student_files_path }}/clusters/{{ item }}/login.html"
+    mode: "0644"
   loop: "{{ cluster_names }}"
 
 - name: Copy kubeconfig file in the student folder
@@ -117,4 +120,4 @@
   ansible.builtin.template:
     src: "serve.sh.j2"
     dest: "{{ workshop_student_files_path }}/serve.sh"
-    mode: 0755
+    mode: "0755"
