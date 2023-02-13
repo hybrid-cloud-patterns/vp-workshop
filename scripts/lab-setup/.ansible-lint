@@ -4,3 +4,5 @@ skip_list:
   - '301'
   # Allow Jinja templating inside task and play names
   - name[template]
+  # Allow some long lines
+  - yaml[line-length]
