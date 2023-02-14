@@ -1,0 +1,20 @@
+---
+- name: Provision kiosk to run podman applications
+  hosts: all
+  become: true
+  vars:
+    systemd_units_dir: /etc/systemd/system/
+    service_name: jellyfin
+    container_state: installed
+    container_image: docker.io/jellyfin/jellyfin
+    container_tag: "latest"
+    container_port_mapping: 8096:8096
+    container_extra_params: --privileged
+    kiosk_port: 8096
+  tasks:
+    - name: Configure kiosk mode on hmi devices
+      ansible.builtin.import_role:
+        name: kiosk_mode
+    - name: import container_lifecycle role
+      ansible.builtin.import_role:
+        name: container_lifecycle
