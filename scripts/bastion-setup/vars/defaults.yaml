@@ -1,0 +1,14 @@
+---
+admins:
+  ipbabble: https://github.com/ipbabble.keys
+  beekhof: https://github.com/beekhof.keys
+  day0hero: https://github.com/day0hero.keys
+  claudiol: https://github.com/claudiol.keys
+  mhjacks: https://github.com/mhjacks.keys
+  mbaldessari: https://github.com/mbaldessari.keys
+  vpshared: https://github.com/mbaldessari.keys
+
+labusers:
+  count: 30
+  prefix: labuser
+  group: vpusers
