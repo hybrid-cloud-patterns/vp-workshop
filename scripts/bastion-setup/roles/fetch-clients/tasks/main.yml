@@ -1,0 +1,59 @@
+---
+- name: OCP Version
+  ansible.builtin.debug:
+    msg: "Downloading clients for OCP: {{ ocp_version }} - Running in folder: {{ base_dir }}"
+
+# Download the sha file for the OpenShift Version
+# This should handle ocp_version 4.x.x and stable-4.x
+# stable-4.x channels contain the latest stable OpenShift version
+- name: Download sha for OCP Version
+  ansible.builtin.get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_version }}/sha256sum.txt"
+    dest: /tmp/sha256sum.txt
+    mode: '0640'
+    force: true
+
+# Redefine variables openshift_installer and ocp_client
+# by extracting the openshift-install and openshift-client defined in the sha file
+- name: Extracting openshift installer from sha file
+  ansible.builtin.set_fact:
+    openshift_installer: "{{ lookup('file', '/tmp/sha256sum.txt') | regex_search('openshift-install-linux-(.*)') }}"
+    ocp_client: "{{ lookup('file', '/tmp/sha256sum.txt') | regex_search('openshift-client-linux-(.*)') }}"
+
+# Use path + filename as destination to avoid redownloading correct files
+# See https://github.com/ansible/ansible/issues/19548
+- name: Download openshift installer
+  ansible.builtin.get_url:
+    url: "{{ openshift_installer_url }}"
+    dest: "/tmp/{{ openshift_installer }}"
+    checksum: "sha256:{{ checksum_url }}"
+    mode: "0644"
+  register: downloaded_installer
+  until: downloaded_installer is succeeded
+  retries: "{{ retries }}"
+
+- name: Download openshift clients
+  ansible.builtin.get_url:
+    url: "{{ ocp_client_url }}"
+    dest: "/tmp/{{ ocp_client }}"
+    checksum: "sha256:{{ checksum_url }}"
+    mode: "0644"
+  register: downloaded_ocp
+  until: downloaded_ocp is succeeded
+  retries: "{{ retries }}"
+
+- name: Extract download tar files
+  ansible.builtin.unarchive:
+    src: "{{ item }}"
+    dest: "/tmp"
+  loop:
+    - "/tmp/{{ openshift_installer }}"
+    - "/tmp/{{ ocp_client }}"
+
+- name: Move binaries to /usr/local/bin
+  ansible.builtin.command:
+    cp "/tmp/{{ item }}" /usr/local/bin
+  loop:
+    - "oc"
+    - "openshift-install"
+    - "kubectl"
