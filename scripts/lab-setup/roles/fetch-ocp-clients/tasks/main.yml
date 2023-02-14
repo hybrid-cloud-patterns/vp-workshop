@@ -3,6 +3,32 @@
   ansible.builtin.debug:
     msg: "Downloading clients for OCP: {{ ocp_version }} - Running in folder: {{ base_dir }}"
 
+# Remove the sha.txt file from the /tmp directory
+# This file is used in the next task to retrieve the openshift-install and oc client
+# defined in the sha file for the ocp_version
+- name: Removing temp file
+  ansible.builtin.file:
+    path: /tmp/sha256sum.txt
+    state: absent
+
+# Download the sha file for the OpenShift Version
+# This should handle ocp_version 4.x.x and stable-4.x
+# stable-4.x channels contain the latest stable OpenShift version 
+- name: Download sha for OCP Version
+  ansible.builtin.get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/{{ ocp_version }}/sha256sum.txt"
+    dest: /tmp/sha256sum.txt
+    mode: '0640'
+
+#
+# Redefine variables openshift_installer and ocp_client
+# by extracting the openshift-install and openshift-client defined in the sha file
+#
+- name: Extracting openshift installer from sha file
+  ansible.builtin.set_fact:
+    openshift_installer: "{{ lookup('file', '/tmp/sha256sum.txt') | regex_search('openshift-install-linux-(.*)') }}"
+    ocp_client: "{{ lookup('file', '/tmp/sha256sum.txt') | regex_search('openshift-client-linux-(.*)') }}"
+
 # Use path + filename as destination to avoid redownloading correct files
 # See https://github.com/ansible/ansible/issues/19548
 - name: Download openshift installer
