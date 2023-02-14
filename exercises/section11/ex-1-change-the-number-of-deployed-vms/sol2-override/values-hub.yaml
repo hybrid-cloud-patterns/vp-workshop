@@ -1,0 +1,101 @@
+---
+clusterGroup:
+  name: hub
+  isHubCluster: true
+
+  namespaces:
+    - vault
+    - golang-external-secrets
+    - ansible-automation-platform
+    - openshift-cnv
+    - openshift-storage
+    - edge-gitops-vms
+
+  subscriptions:
+    aap-operator:
+      name: ansible-automation-platform-operator
+      namespace: ansible-automation-platform
+
+    openshift-virtualization:
+      name: kubevirt-hyperconverged
+      namespace: openshift-cnv
+
+    openshift-data-foundation:
+      name: odf-operator
+      namespace: openshift-storage
+
+  projects:
+    - hub
+
+  imperative:
+    jobs:
+      - name: deploy-kubevirt-worker
+        playbook: ansible/deploy_kubevirt_worker.yml
+        verbosity: -vvv
+      - name: configure-aap-controller
+        playbook: ansible/imperative_configure_controller.yml
+        image: quay.io/hybridcloudpatterns/ansible-edge-gitops-ee:latest
+        verbosity: -vvv
+        timeout: "900"
+    clusterRoleYaml:
+      - apiGroups:
+          - "*"
+        resources:
+          - machinesets
+        verbs:
+          - "*"
+      - apiGroups:
+          - "*"
+        resources:
+          - "*"
+        verbs:
+          - get
+          - list
+          - watch
+
+  applications:
+    aap:
+      name: ansible-automation-platform
+      project: hub
+      path: charts/hub/ansible-automation-platform
+
+    aap-config:
+      name: aap-config
+      project: hub
+      path: charts/hub/aap-config
+
+    vault:
+      name: vault
+      namespace: vault
+      project: hub
+      path: common/hashicorp-vault
+
+    golang-external-secrets:
+      name: golang-external-secrets
+      namespace: golang-external-secrets
+      project: hub
+      path: common/golang-external-secrets
+
+    openshit-cnv:
+      name: openshift-cnv
+      namespace: openshift-cnv
+      project: hub
+      path: charts/hub/cnv
+
+    odf:
+      name: odf
+      namespace: openshift-storage
+      project: hub
+      path: charts/hub/openshift-data-foundations
+
+    edge-gitops-vms:
+      name: edge-gitops-vms
+      namespace: edge-gitops-vms
+      project: hub
+      path: charts/hub/edge-gitops-vms
+      overrides:
+        - name: vms.kiosk.count
+          value: 5
+
+  # Only the hub cluster here - managed entities are edge nodes
+  managedClusterGroups: []
