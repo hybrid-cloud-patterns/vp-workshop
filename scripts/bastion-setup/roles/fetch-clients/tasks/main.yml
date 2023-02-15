@@ -44,8 +44,8 @@
 
 - name: Download helm
   ansible.builtin.get_url:
-    url: "{{ helm_url }}"
-    dest: "/tmp/{{ helm_tarbell }}"
+    url: "{{ helm_base_url }}"
+    dest: "/tmp/{{ helm_tarball }}"
     checksum: "sha256:{{ helm_checksum_url }}"
     mode: "0644"
   register: downloaded_helm
@@ -61,6 +61,14 @@
     - "/tmp/{{ ocp_client }}"
     - "/tmp/{{ helm_tarball }}"
 
+- name: Special handling for helm
+  ansible.builtin.copy:
+    src: '/tmp/linux-amd64/helm'
+    dest: '/usr/local/bin/helm'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
 - name: Move binaries to /usr/local/bin
   ansible.builtin.command:
     cp "/tmp/{{ item }}" /usr/local/bin
@@ -68,4 +76,3 @@
     - "oc"
     - "openshift-install"
     - "kubectl"
-    - "helm"
