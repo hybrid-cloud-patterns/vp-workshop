@@ -14,6 +14,7 @@
       ansible.builtin.dnf:
         name: "*"
         state: latest
+      when: upgrade_packages
 
     - name: Install needed packages
       ansible.builtin.dnf:
