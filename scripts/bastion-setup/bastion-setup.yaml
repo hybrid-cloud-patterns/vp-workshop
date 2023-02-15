@@ -83,3 +83,8 @@
         update_password: on_create
         password: "{{ labuser_password | password_hash('sha512', salt) }}"
       with_sequence: start="1" end="{{ labusers.count }}" format="{{ labusers.prefix }}%02d"
+
+    - name: Setup nginx
+      ansible.builtin.include_role:
+        name: setup-nginx
+
