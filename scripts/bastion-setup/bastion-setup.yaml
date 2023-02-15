@@ -6,80 +6,80 @@
   vars_files:
     - ./vars/defaults.yaml
   tasks:
-  - name: Read in ~/.labuser_common_pass
-    ansible.builtin.set_fact:
-      labuser_password: "{{ lookup('file', '~/.labuser_common_pass') }}"
+    - name: Read in ~/.labuser_common_pass
+      ansible.builtin.set_fact:
+        labuser_password: "{{ lookup('file', '~/.labuser_common_pass') }}"
 
-  - name: Update all packages
-    ansible.builtin.dnf:
-      name: "*"
-      state: latest
+    - name: Update all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
 
-  - name: Install needed packages
-    ansible.builtin.dnf:
-      name: ["tmux", "vim", "git", "podman", "make", "nginx"]
-      state: latest
+    - name: Install needed packages
+      ansible.builtin.dnf:
+        name: ["tmux", "vim", "git", "podman", "make", "nginx", "pcp-zeroconf"]
+        state: installed
 
-  - name: Create admins 
-    ansible.builtin.user:
-      name: "{{ item.key }}"
-      shell: /bin/bash
-      create_home: true
-      groups: wheel,adm
-    loop: "{{ admins | dict2items }}"
-    loop_control:
-      label: "{{ item.key }}"
+    - name: Create admins
+      ansible.builtin.user:
+        name: "{{ item.key }}"
+        shell: /bin/bash
+        create_home: true
+        groups: wheel,adm
+      loop: "{{ admins | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
 
-  - name: Create ~/.ssh folder
-    ansible.builtin.file:
-      path: "/home/{{ item.key }}/.ssh"
-      state: directory
-      mode: "0700"
-      owner: "{{ item.key }}"
-      group: "{{ item.key }}"
-    loop: "{{ admins | dict2items }}"
-    loop_control:
-      label: "{{ item.key }}"
+    - name: Create ~/.ssh folder
+      ansible.builtin.file:
+        path: "/home/{{ item.key }}/.ssh"
+        state: directory
+        mode: "0700"
+        owner: "{{ item.key }}"
+        group: "{{ item.key }}"
+      loop: "{{ admins | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
 
-  # Do not want to require the ansible.posix collection so do it by hand
-  - name: Fetch ssh keys
-    ansible.builtin.get_url:
-      url: "{{ item.value }}"
-      dest: "/home/{{ item.key }}/.ssh/authorized_keys"
-      mode: "0600"
-      owner: "{{ item.key }}"
-      group: "{{ item.key }}"
-    loop: "{{ admins | dict2items }}"
-    loop_control:
-      label: "{{ item.key }}"
+    # Do not want to require the ansible.posix collection so do it by hand
+    - name: Fetch ssh keys
+      ansible.builtin.get_url:
+        url: "{{ item.value }}"
+        dest: "/home/{{ item.key }}/.ssh/authorized_keys"
+        mode: "0600"
+        owner: "{{ item.key }}"
+        group: "{{ item.key }}"
+      loop: "{{ admins | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
 
-  - name: Setup sudoers
-    ansible.builtin.lineinfile:
-      dest: /etc/sudoers
-      state: present
-      regexp: '^%wheel'
-      line: '%wheel ALL=(ALL) NOPASSWD: ALL'
-      validate: 'visudo -cf %s'
+    - name: Setup sudoers
+      ansible.builtin.lineinfile:
+        dest: /etc/sudoers
+        state: present
+        regexp: '^%wheel'
+        line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+        validate: 'visudo -cf %s'
 
-  - name: Fetch clients and install them in /usr/local/bin
-    ansible.builtin.include_role:
-      name: fetch-clients
+    - name: Fetch clients and install them in /usr/local/bin
+      ansible.builtin.include_role:
+        name: fetch-clients
 
-  - name: Create {{ labusers.group }} group
-    ansible.builtin.group:
-      name: "{{ labusers.group }}"
-      state: present
+    - name: Create {{ labusers.group }} group
+      ansible.builtin.group:
+        name: "{{ labusers.group }}"
+        state: present
 
-  - name: Set random salt
-    ansible.builtin.set_fact:
-      salt: "{{ lookup('password', '/dev/null chars=ascii_letters,digit length=8', seed=inventory_hostname) }}"
+    - name: Set random salt
+      ansible.builtin.set_fact:
+        salt: "{{ lookup('password', '/dev/null chars=ascii_letters,digit length=8', seed=inventory_hostname) }}"
 
-  - name: Create users
-    ansible.builtin.user:
-      name: "{{ item }}"
-      shell: /bin/bash
-      create_home: true
-      group: "{{ labusers.group }}"
-      update_password: on_create
-      password: "{{ labuser_password | password_hash('sha512', salt) }}"
-    with_sequence: start="1" end="{{ labusers.count }}" format="{{ labusers.prefix }}%02d"
+    - name: Create users
+      ansible.builtin.user:
+        name: "{{ item }}"
+        shell: /bin/bash
+        create_home: true
+        group: "{{ labusers.group }}"
+        update_password: on_create
+        password: "{{ labuser_password | password_hash('sha512', salt) }}"
+      with_sequence: start="1" end="{{ labusers.count }}" format="{{ labusers.prefix }}%02d"
