@@ -17,7 +17,12 @@
 
     - name: Install needed packages
       ansible.builtin.dnf:
-        name: ["tmux", "vim", "git", "podman", "make", "nginx", "pcp-zeroconf", "words", "sscg", "httpd-tools", "tree", "python3-bcrypt"]
+        name: ["tmux", "vim", "git", "git-subtree", "podman", "make", "nginx", "pcp-zeroconf", "words", "sscg", "httpd-tools", "tree", "python3-bcrypt"]
+        state: installed
+
+    - name: Install useful (extra) tooling
+      ansible.builtin.dnf:
+        name: ["zsh", "zsh-syntax-highlighting", "fish", "neovim"]
         state: installed
 
     - name: Create admins
