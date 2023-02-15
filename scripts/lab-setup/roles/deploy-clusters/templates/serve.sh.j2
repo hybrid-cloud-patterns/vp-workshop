@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+echo "If you are on the bastion host you can just copy all these folders"
+echo "to /var/www/html where they are exporte by nginx which is already configured"
+echo ""
+echo "If you were running this deployment on your laptop you can export them from here"
+echo "directly"
+read -p "Are you running this from your laptop? (y/n) " -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]];
+then
+  exit 0
+fi
+
 # We use a random simple user/password just to avoid drive-by peeks
 USER=beard
 PASSWORD=$(shuf -n1 /usr/share/dict/words)
