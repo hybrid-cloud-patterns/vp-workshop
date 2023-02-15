@@ -4,6 +4,7 @@ set -e
 # We use a random simple user/password just to avoid drive-by peeks
 USER=beard
 PASSWORD=$(shuf -n1 /usr/share/dict/words)
+IMAGE=docker.io/library/nginx:latest
 
 # Create self-signed certificates
 # Create self-signed certificates
@@ -28,4 +29,4 @@ podman run -it --rm -p "${PORT}":443 --name nginx \
 	-v "{{ base_dir }}/nginx:/etc/nginx:ro,z" \
 	-v "./ssl/:/etc/nginx/ssl:ro,z" \
 	-v "./ssl/htpasswd:/etc/nginx/.htpasswd:ro,z" \
-	-v "$(pwd)/clusters/:/var/www:ro,z" nginx:latest
+	-v "$(pwd)/clusters/:/var/www:ro,z" "${IMAGE}"
