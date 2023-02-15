@@ -17,7 +17,7 @@
 
     - name: Install needed packages
       ansible.builtin.dnf:
-        name: ["tmux", "vim", "git", "podman", "make", "nginx", "pcp-zeroconf", "words", "sscg", "httpd-tools"]
+        name: ["tmux", "vim", "git", "podman", "make", "nginx", "pcp-zeroconf", "words", "sscg", "httpd-tools", "tree"]
         state: installed
 
     - name: Create admins
@@ -83,3 +83,8 @@
         update_password: on_create
         password: "{{ labuser_password | password_hash('sha512', salt) }}"
       with_sequence: start="1" end="{{ labusers.count }}" format="{{ labusers.prefix }}%02d"
+
+    - name: Setup nginx
+      ansible.builtin.include_role:
+        name: setup-nginx
+

@@ -9,3 +9,5 @@ the common user that invokes commands and whatnot.
 It also creates 30 normal `labuserXY` users that are part of the `vpusers` group. That could
 be used by students if needed.
 The password of these users will be set to whatever is in `~/.labuser_common_pass`
+
+Also nginx will be configure with certbot and basic auth. Same password used in `~/.labuser_common_pass`

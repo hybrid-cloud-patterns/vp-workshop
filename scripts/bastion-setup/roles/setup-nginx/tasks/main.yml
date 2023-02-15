@@ -1,0 +1,59 @@
+---
+- name: Installing Epel
+  ansible.builtin.dnf:
+    name: "epel-release"
+    state: latest
+
+- name: Installing certbot and certbot-nginx
+  ansible.builtin.dnf:
+    name: ["certbot", "python3-certbot-nginx.noarch"]
+    state: latest
+
+- name: Check if certificate already exists
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ cert_name }}/cert.pem"
+  register: letsencrypt_cert
+
+- name: "Generate new certificate if one doesn't exist"
+  ansible.builtin.shell: >
+    certbot certonly --nginx --email '{{ letsencrypt_email }}'
+    --agree-tos -d '{{ cert_domain }}'
+    --cert-name '{{ cert_name }}'
+    {% if letsencrypt_staging %} --staging {% endif %}
+  when: not letsencrypt_cert.stat.exists
+
+- name: Force generation of a new certificate
+  ansible.builtin.shell: >
+    certbot certonly --force-renewal --nginx --email '{{ letsencrypt_email }}'
+    --agree-tos -d '{{ cert_domain }}'
+    --cert-name '{{ cert_name }}'
+    {% if letsencrypt_staging %} --staging {% endif %}
+    --non-interactive
+  when:
+    - letsencrypt_cert.stat.exists 
+    - force_renewal
+  notify: reload nginx
+
+- name: Template out nginx config
+  ansible.builtin.template:
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create htpasswd
+  ansible.builtin.shell: |
+    htpasswd -Bbc "/etc/nginx/.htpasswd" "{{ nginx_user }}" "{{ labuser_password }}"
+
+- name: Create nginx root folder
+  ansible.builtin.file:
+    path: "{{ nginx_root }}"
+    state: directory
+
+- name: Restart nginx
+  ansible.builtin.systemd:
+    name: nginx
+    state: restarted
+
+

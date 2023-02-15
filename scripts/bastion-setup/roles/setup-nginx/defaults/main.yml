@@ -1,0 +1,11 @@
+---
+cert_domain: bastion.hybrid-cloud-patterns.io
+# Used internally by certbot to do bookkeeping
+cert_name: bastion
+force_renewal: false
+# http auth user
+nginx_user: beard
+# nginx root folder
+nginx_root: /var/www/html
+letsencrypt_staging: true
+letsencrypt_email: michele@acksyn.org
