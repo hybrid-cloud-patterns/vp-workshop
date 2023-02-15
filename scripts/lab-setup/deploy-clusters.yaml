@@ -36,7 +36,8 @@
     - name: Info about clusters to be deployed
       vars:
         msg: |
-          Number of clusters to be installed: {{ clusters_count }} - AWS Region: {{ aws_region }}
+          Number of clusters to be installed: {{ clusters_count }}
+          AWS Region: {{ aws_region }}
 
           Control Nodes: {{ "%02d" | format(controlplane_replicas) }} [{{ controlplane_type }}]
           Compute Nodes: {{ "%02d" | format(compute_replicas) }} [{{ compute_type }}]
