@@ -127,4 +127,3 @@
     if [ -d "{{ students_nginx_output }}" ]; then
       cp -avf "{{ workshop_student_files_path }}/*" "{{ students_nginx_output }}"
     fi
-    dest: "{{ workshop_student_files_path }}/serve.sh"
