@@ -42,6 +42,16 @@
   until: downloaded_ocp is succeeded
   retries: "{{ retries }}"
 
+- name: Download helm
+  ansible.builtin.get_url:
+    url: "{{ helm_base_url }}"
+    dest: "/tmp/{{ helm_tarball }}"
+    checksum: "sha256:{{ helm_checksum_url }}"
+    mode: "0644"
+  register: downloaded_helm
+  until: downloaded_helm is succeeded
+  retries: "{{ retries }}"
+
 - name: Extract download tar files
   ansible.builtin.unarchive:
     src: "{{ item }}"
@@ -49,6 +59,15 @@
   loop:
     - "/tmp/{{ openshift_installer }}"
     - "/tmp/{{ ocp_client }}"
+    - "/tmp/{{ helm_tarball }}"
+
+- name: Special handling for helm
+  ansible.builtin.copy:
+    src: '/tmp/linux-amd64/helm'
+    dest: '/usr/local/bin/helm'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
 
 - name: Move binaries to /usr/local/bin
   ansible.builtin.command:
