@@ -124,6 +124,6 @@
 
 - name: Copy students files to nginx root folder
   ansible.builtin.shell: |
-    if [ -d "{{ students_nginx_output }}" ]; then
-      cp -avf "{{ workshop_student_files_path }}/*" "{{ students_nginx_output }}"
+    if [ -d {{ students_nginx_output }} ]; then
+      cp -avf {{ workshop_student_files_path }}/clusters {{ students_nginx_output }}
     fi
