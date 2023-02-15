@@ -7,6 +7,7 @@
     - "{{ ssh_pub_file }}"
     - "{{ pull_secrets_file }}"
     - "{{ cluster_password_file }}"
+    - "{{ aws_cred_file }}"
 
 - name: Fail if any file does not exist
   ansible.builtin.fail:
