@@ -123,6 +123,7 @@
     mode: "0755"
 
 - name: Copy students files to nginx root folder
+  become: true
   ansible.builtin.shell: |
     if [ -d {{ students_nginx_output }} ]; then
       cp -avf {{ workshop_student_files_path }}/clusters {{ students_nginx_output }}
