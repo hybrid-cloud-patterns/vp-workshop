@@ -53,7 +53,7 @@
   register: install_jobs
   until: install_jobs.finished
   delay: 60 # check every minute
-  retries: 90 # 1h and 30mins max wait time
+  retries: 120 # 1h and 30mins max wait time
   loop: "{{ deploy_openshift_clusters.results }}"
 
 - name: Read in ~/.vp_workshop_common_pass

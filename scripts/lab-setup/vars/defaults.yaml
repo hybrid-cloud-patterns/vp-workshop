@@ -2,7 +2,7 @@ clusters_count: 1
 aws_region: "eu-west-3"
 ocp_version: "stable-4.11"
 clusters_prefix: "vp-workshop-"
-workshop_output_path: "~/vp-workshop"
+workshop_output_path: "~/vp-workshop-output"
 # Where all the openshift install output files live
 workshop_ocp_install_path: "{{ workshop_output_path }}/ocp_install"
 # Where all the openshift install and ocp client bin files are downloaded
