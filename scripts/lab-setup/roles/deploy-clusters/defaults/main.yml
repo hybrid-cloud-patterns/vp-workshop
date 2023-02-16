@@ -11,6 +11,7 @@ machine_network_cidr: 10.0.0.0/16
 network_type: OpenShiftSDN
 service_network: 172.30.0.0/16
 
+base64_cmd: "base64 -w0"
 clusters_start_nr: 1
 clusters_end_nr: "{{ clusters_count }}"
 
