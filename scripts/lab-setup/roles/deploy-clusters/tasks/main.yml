@@ -71,7 +71,7 @@
   ansible.builtin.shell:
     cmd: |
       set -ex
-      PASS=$(python3 -c 'import bcrypt; print(bcrypt.hashpw(b"{{ vp_common_secret }}", bcrypt.gensalt(rounds=10)).decode())' | "{{ base64_cmd }}")
+      PASS=$(python3 -c 'import bcrypt; print(bcrypt.hashpw(b"{{ vp_common_secret }}", bcrypt.gensalt(rounds=10)).decode())' | {{ base64_cmd }})
       chmod 0600 {{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeadmin-password
       chmod 0600 {{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeconfig
       KUBECONFIG={{ workshop_ocp_install_path | expanduser }}/{{ item }}/auth/kubeconfig \
