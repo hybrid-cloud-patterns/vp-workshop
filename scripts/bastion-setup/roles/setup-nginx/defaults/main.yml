@@ -7,5 +7,5 @@ force_renewal: false
 nginx_user: beard
 # nginx root folder
 nginx_root: /var/www/html
-letsencrypt_staging: true
+letsencrypt_staging: false
 letsencrypt_email: michele@acksyn.org
