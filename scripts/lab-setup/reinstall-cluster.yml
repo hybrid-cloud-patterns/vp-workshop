@@ -1,0 +1,90 @@
+---
+- name: Reinstall AWS cluster
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars_files:
+    - ./vars/defaults.yml
+  tasks:
+    - name: Make sure the openshift installation base folder is not empty
+      ansible.builtin.find:
+        paths: "{{ workshop_ocp_install_path }}"
+        file_type: any
+        hidden: true
+      register: workspace_folders
+
+    - name: Fail if {{ workshop_ocp_install_path }} folder is empty
+      ansible.builtin.fail:
+        msg: |
+          No point to proceed as the {{ workshop_ocp_install_path }} folder is empty and there is no record of
+          existing clusters
+      when: workspace_folders.matched == 0
+
+    - name: Fetch all folders
+      ansible.builtin.set_fact:
+        cluster_folders: "{{ cluster_folders | default([]) + [item.path | basename] }}"
+      loop: "{{ workspace_folders.files }}"
+      loop_control:
+        label: "{{ item.path | basename }}"
+
+    - name: Print all found folders
+      ansible.builtin.debug:
+        msg: "{{ cluster_folders }}"
+
+    - name: Ask which cluster we want to reinstall
+      ansible.builtin.pause:
+        prompt: "Which cluster do you want to fully reinstall (give only the number e.g. '02')"
+      register: cluster_to_be_reinstalled
+
+    - name: Set cluster name to reinstall
+      ansible.builtin.set_fact:
+        cluster_reinstall_nr: "{{ cluster_to_be_reinstalled.user_input | int }}"
+        cluster_reinstall_name: "{{ '%s%02d'|format(clusters_prefix, cluster_reinstall_nr) }}"
+
+    - name: Fail if the cluster is not known
+      ansible.builtin.fail:
+        msg: "Stopping here as we have no knowledge of {{ cluster_reinstall }}"
+      when: cluster_reinstall_name not in cluster_folders
+
+    - name: Prompt if the above is okay
+      ansible.builtin.pause:
+        prompt: "Do you want to proceed REINSTALLING cluster {{ cluster_reinstall_name }} (yes/no)?"
+      register: check_continue
+
+    - name: Fail if not confirmed continue
+      ansible.builtin.fail:
+        msg: "Stopping here as we did not confirm"
+      when: not (check_continue.user_input | bool)
+
+    - name: Delete OpenShift clusters
+      ansible.builtin.shell:
+        cmd: |
+          set -ex
+          {{ workshop_ocp_client_path }}/openshift-install destroy cluster --dir=.
+        chdir: "{{ workshop_ocp_install_path }}/{{ item }}"
+      loop: "{{ cluster_reinstall_name | list }}"
+      register: destroy_openshift_cluster
+      async: 3600 # maximum runtime is 1h
+      poll: 0 # do not wait
+
+    - name: Cluster destruction is ongoing
+      ansible.builtin.debug:
+        msg: |
+          Openshift cluster {{ cluster_reinstall_name }} destroying is proceeding, DO NOT INTERRUPT THIS PROCESS!!
+          You can check progress logs in {{ workshop_ocp_install_path }}/<cluster>/.openshift_install.log
+
+    - name: Wait for cluster destroy to finish
+      ansible.builtin.async_status:
+        jid: "{{ item.ansible_job_id }}"
+      register: install_jobs
+      until: install_jobs.finished
+      delay: 60 # check every minute
+      retries: 70 # 1h and 10mins max wait time
+      loop: "{{ destroy_openshift_cluster.results }}"
+
+    - name: Deploy OCP clusters
+      ansible.builtin.include_role:
+        name: deploy-clusters
+      vars:
+        clusters_start_nr: "{{ cluster_reinstall_nr }}"
+        clusters_end_nr: "{{ cluster_reinstall_nr }}"
