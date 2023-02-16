@@ -1,4 +1,11 @@
 ---
+- name: OS-based overrides
+  include_vars: "{{ item }}"
+  with_first_found:
+    - skip: true
+      files:
+        - "{{ ansible_facts['os_family'] | lower }}.yaml"
+
 - name: OCP Version
   ansible.builtin.debug:
     msg: "Deploying {{ clusters_count }} OCP {{ ocp_version }} clusters in AWS region {{ aws_region }}"
