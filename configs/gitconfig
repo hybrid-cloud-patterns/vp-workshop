@@ -44,9 +44,7 @@
 	sh = show
 	show-merge = "!sh -c 'merge=$(git find-merge $0 $1) && [ -n \"$merge\" ] && git show $merge'"
 	st = status
-	sw = show --word-diff=color
-	swp = show --word-diff=porcelain
-	swc = show --word-diff=color --word-diff-regex=.
+	sw = switch
 	up = !sh -c 'git pull --rebase --prune && git log --pretty=format:\"%Cred%ae %Creset- %C(yellow)%s %Creset(%ar)\" HEAD@{1}..'
 	upstream-branch = status -sb
 	wt = worktree
