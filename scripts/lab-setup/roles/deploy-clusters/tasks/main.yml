@@ -4,7 +4,7 @@
   with_first_found:
     - skip: true
       files:
-        - "{{ ansible_facts['os_family'] | lower }}.yaml"
+        - "{{ ansible_facts['os_family'] | lower }}.yml"
 
 - name: OCP Version
   ansible.builtin.debug:

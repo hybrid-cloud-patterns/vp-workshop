@@ -4,7 +4,7 @@
   connection: local
   gather_facts: false
   vars_files:
-    - ./vars/defaults.yaml
+    - ./vars/defaults.yml
   vars_prompt:
     - name: additional_clusters
       prompt: How many clusters should we add?
