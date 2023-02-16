@@ -43,6 +43,9 @@ Run: `make destroy`
 
 Run: `make resize`
 
+## Reinstall a single cluster
+
+Run: `make reinstall`
 
 ## Notes
 
