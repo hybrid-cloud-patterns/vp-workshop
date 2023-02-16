@@ -1,0 +1,4 @@
+* Rewrite deploy role to accept an array of cluster names
+* Add a destroy role that accepts a list of cluster names to be destroyed
+* Move all plays to use those roles
+* Expand the reinstall task to reinstall multiple clusters at the same time
