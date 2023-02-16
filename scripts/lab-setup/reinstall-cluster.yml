@@ -36,14 +36,17 @@
         prompt: "Which cluster do you want to fully reinstall (give only the number e.g. '02')"
       register: cluster_to_be_reinstalled
 
-    - name: Set cluster name to reinstall
+    - name: Set cluster nr to be reinstalled
       ansible.builtin.set_fact:
         cluster_reinstall_nr: "{{ cluster_to_be_reinstalled.user_input | int }}"
-        cluster_reinstall_name: "{{ '%s%02d'|format(clusters_prefix, cluster_reinstall_nr) }}"
+
+    - name: Set cluster name to be reinstalled
+      ansible.builtin.set_fact:
+        cluster_reinstall_name: "{{ '%s%02d' | format(clusters_prefix, cluster_reinstall_nr | int) }}"
 
     - name: Fail if the cluster is not known
       ansible.builtin.fail:
-        msg: "Stopping here as we have no knowledge of {{ cluster_reinstall }}"
+        msg: "Stopping here as we have no knowledge of {{ cluster_reinstall_name }}"
       when: cluster_reinstall_name not in cluster_folders
 
     - name: Prompt if the above is okay
@@ -62,7 +65,7 @@
           set -ex
           {{ workshop_ocp_client_path }}/openshift-install destroy cluster --dir=.
         chdir: "{{ workshop_ocp_install_path }}/{{ item }}"
-      loop: "{{ cluster_reinstall_name | list }}"
+      loop: "{{ [cluster_reinstall_name] }}"
       register: destroy_openshift_cluster
       async: 3600 # maximum runtime is 1h
       poll: 0 # do not wait
