@@ -36,6 +36,7 @@
 	lol = log --graph --decorate --pretty=oneline --abbrev-commit
 	lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
 	ls = ls-files
+	ls-subtrees = !"for i in $(git log | grep git-subtree-dir | sed -e 's/^.*: //g' | uniq); do test -d $i && echo $i; done"
 	lg = log --pretty=format:'%Cred%h%Creset - %Cgreen(%ci) %C(yellow)%d%Creset %s %C(bold blue)<%an>%Creset' --no-abbrev-commit --date=relative
 	rb = rebase
 	rbc = rebase --continue
