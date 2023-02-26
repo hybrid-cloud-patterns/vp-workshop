@@ -135,6 +135,6 @@
     if [ -d '{{ students_nginx_output }}' ]; then
       cp -avf '{{ workshop_student_files_path }}/clusters' '{{ students_nginx_output }}'
     fi
-    find -type d '{{ students_nginx_otput }}' -exec chmod 755 "{}";
-    find -type f '{{ students_nginx_otput }}' -exec chmod 644 "{}";
+    find '{{ students_nginx_otput }}' -type d -exec chmod 755 "{}" \;
+    find '{{ students_nginx_otput }}' -type f -exec chmod 644 "{}" \;
     restorecon -Rv '{{ students_nginx_output }}'
