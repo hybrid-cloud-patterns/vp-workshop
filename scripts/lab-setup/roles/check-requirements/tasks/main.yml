@@ -1,6 +1,7 @@
 ---
 - name: OS-based overrides
   include_vars: "{{ item }}"
+  ignore_errors: true
   with_first_found:
     - skip: true
       files:
