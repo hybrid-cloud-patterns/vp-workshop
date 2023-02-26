@@ -2,7 +2,7 @@
 - name: Destroy AWS clusters
   hosts: localhost
   connection: local
-  gather_facts: false
+  gather_facts: true
   vars_files:
     - ./vars/defaults.yml
   tasks:
